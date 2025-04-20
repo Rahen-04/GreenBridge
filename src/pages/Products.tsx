@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/ProductCard';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -243,7 +242,6 @@ export default function Products() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
