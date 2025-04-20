@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, X, ArrowRight, Truck, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -318,7 +317,6 @@ export default function Cart() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
