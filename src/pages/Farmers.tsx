@@ -1,7 +1,6 @@
 
 import React from 'react';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Star, Mail, Phone } from 'lucide-react';
@@ -215,7 +214,6 @@ export default function Farmers() {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }
