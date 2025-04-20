@@ -1,7 +1,6 @@
 
 import React from 'react';
 import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Phone, Mail, Clock, Send, MessageSquare } from 'lucide-react';
@@ -264,7 +263,6 @@ export default function Contact() {
           </div>
         </section>
       </main>
-      <Footer />
     </div>
   );
 }
