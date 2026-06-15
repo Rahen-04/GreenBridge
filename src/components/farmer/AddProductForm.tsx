@@ -16,7 +16,7 @@ import {
 import { Image, DollarSign, Box, Tag, Calendar, Upload } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// ✅ Form validation schema (now includes image file)
+
 const productSchema = z.object({
   name: z.string().min(2, { message: "Product name must be at least 2 characters" }),
   price: z.string().refine(
@@ -300,4 +300,4 @@ export default function AddProductForm({ onSubmit, onCancel, initialData }: AddP
       </form>
     </Form>
   );
-}
+} 

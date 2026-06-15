@@ -15,11 +15,11 @@ export default function Hero() {
           {/* Text Content */}
           <div className="max-w-xl animate-fade-up" style={{ animationDelay: '0.1s' }}>
             <div className="mb-6">
-              <span className="inline-block px-3 py-1 bg-nature-100 text-nature-600 rounded-full text-sm font-medium">
-               Buy Fresh
+              <span className="inline-block px-3 py-1 bg-nature-100 text-nature-600 rounded-full text-sm font-medium mr-2">
+                Buy Fresh
               </span>
               <span className="inline-block px-3 py-1 bg-nature-100 text-nature-600 rounded-full text-sm font-medium">
-               Buy Fair
+                Buy Fair
               </span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-balance">
@@ -27,7 +27,7 @@ export default function Hero() {
               <span className="text-nature-600">Fresh and Sustainable</span>
             </h1>
             <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed">
-            GreenBridge help farmers secure buyers in advance of harvest time, reduce post-harvest losses, and promote fair pricing by eliminating middlemen
+              GreenBridge helps farmers secure buyers in advance of harvest time, reduce post-harvest losses, and promote fair pricing by eliminating middlemen.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <a 

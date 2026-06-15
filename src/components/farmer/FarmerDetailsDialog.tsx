@@ -12,42 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, MapPin, Mail, Phone } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
-
-interface Review {
-  id: string;
-  userName: string;
-  rating: number;
-  comment: string;
-  date: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  image: string;
-  category: string;
-  price: number;
-  stock: number;
-}
+import { Farmer } from "@/lib/api";
 
 interface FarmerDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  farmer: {
-    id: string;
-    name: string;
-    image: string;
-    location: string;
-    rating: number;
-    specialties: string[];
-    description: string;
-    email: string;
-    phone: string;
-    isVerified: boolean;
-    products: Product[];
-    reviews: Review[];
-  };
+  farmer: Farmer;
 }
 
 export default function FarmerDetailsDialog({

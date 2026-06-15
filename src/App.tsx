@@ -14,6 +14,7 @@ import Contact from "./pages/Contact";
 import Cart from "./pages/Cart";
 import Account from "./pages/Account";
 import ProductOrder from "./pages/ProductOrder";
+import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,20 +25,20 @@ const App = () => (
       <UserProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename="/GreenBridge">
           <div className="min-h-screen flex flex-col">
             <Navbar />
             <main className="flex-grow pt-16">
               <Routes>
-                <Route path="GreenBridge/" element={<Index />} />
+                <Route path="/" element={<Index />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/product-order" element={<ProductOrder />} />
+                <Route path="/checkout/:productId" element={<Checkout />} />
                 <Route path="/farmers" element={<Farmers />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/account" element={<Account />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

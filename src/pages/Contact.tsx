@@ -1,25 +1,35 @@
-
-import React from 'react';
-import Navbar from '@/components/layout/Navbar';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { MapPin, Phone, Mail, Clock, Send, MessageSquare } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { contactApi } from '@/lib/api';
 
 export default function Contact() {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', subject: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, you would send the form data to your backend
-    toast({
-      title: "Message sent",
-      description: "We'll get back to you as soon as possible!",
-    });
+    setIsSubmitting(true);
+    try {
+      await contactApi.send({
+        name: `${form.firstName} ${form.lastName}`.trim(),
+        email: form.email,
+        subject: form.subject,
+        message: form.message,
+      });
+      toast({ title: 'Message sent', description: "We'll get back to you as soon as possible!" });
+      setForm({ firstName: '', lastName: '', email: '', phone: '', subject: '', message: '' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to send message.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow pt-24">
+    <>
         {/* Hero Section */}
         <section className="bg-gradient-to-b from-nature-50/70 to-white py-16">
           <div className="container mx-auto px-6 text-center">
@@ -137,65 +147,36 @@ export default function Contact() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                        <input 
-                          type="text" 
-                          id="firstName" 
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" 
-                          required 
-                        />
+                        <input type="text" id="firstName" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" required />
                       </div>
                       <div>
                         <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                        <input 
-                          type="text" 
-                          id="lastName" 
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" 
-                          required 
-                        />
+                        <input type="text" id="lastName" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" required />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                       <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                        <input 
-                          type="email" 
-                          id="email" 
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" 
-                          required 
-                        />
+                        <input type="email" id="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" required />
                       </div>
                       <div>
                         <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <input 
-                          type="tel" 
-                          id="phone" 
-                          className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" 
-                        />
+                        <input type="tel" id="phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" />
                       </div>
                     </div>
 
                     <div className="mb-6">
                       <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                      <input 
-                        type="text" 
-                        id="subject" 
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" 
-                        required 
-                      />
+                      <input type="text" id="subject" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" required />
                     </div>
 
                     <div className="mb-6">
                       <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                      <textarea 
-                        id="message" 
-                        rows={5} 
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" 
-                        required
-                      ></textarea>
+                      <textarea id="message" rows={5} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-nature-500 focus:border-transparent" required />
                     </div>
 
-                    <Button type="submit" className="w-full bg-nature-600 hover:bg-nature-700 text-white flex items-center justify-center gap-2">
+                    <Button type="submit" disabled={isSubmitting} className="w-full bg-nature-600 hover:bg-nature-700 text-white flex items-center justify-center gap-2">
                       <Send className="h-4 w-4" />
                       Send Message
                     </Button>
@@ -262,7 +243,6 @@ export default function Contact() {
             </div>
           </div>
         </section>
-      </main>
-    </div>
+    </>
   );
 }

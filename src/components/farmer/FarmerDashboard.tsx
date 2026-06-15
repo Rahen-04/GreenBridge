@@ -50,11 +50,23 @@ const sampleProducts = [
   }
 ];
 
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  stock: number;
+  image: string;
+  category: string;
+}
+
+type ProductFormData = Omit<Product, "id">;
+
 export default function FarmerDashboard() {
   const { toast } = useToast();
-  const [products, setProducts] = useState(sampleProducts);
+  const [products, setProducts] = useState<Product[]>(sampleProducts);
   const [showAddProductForm, setShowAddProductForm] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
   // Sample stats for the dashboard
   const stats = [
@@ -64,7 +76,7 @@ export default function FarmerDashboard() {
     { name: "New Customers", value: 8 },
   ];
 
-  const handleAddProduct = (product: any) => {
+  const handleAddProduct = (product: ProductFormData) => {
     if (selectedProduct) {
       // Update existing product
       setProducts(products.map(p => 
@@ -90,7 +102,7 @@ export default function FarmerDashboard() {
     setSelectedProduct(null);
   };
 
-  const handleEditProduct = (product: any) => {
+  const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
     setShowAddProductForm(true);
   };

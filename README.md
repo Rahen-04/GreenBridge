@@ -1,71 +1,57 @@
-# Welcome to your Lovable project
+# GreenBridge
 
-## Project info
+A farm-to-table marketplace connecting local farmers with consumers. Farmers can list products, manage orders, and consumers can browse, cart, and checkout.
 
-**URL**: https://lovable.dev/projects/9fa0adca-be8a-4d01-b990-f355c19354e1
+## Tech Stack
 
-## How can I edit hi this code?
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS, shadcn/ui, React Query
+- **Backend:** Express, Prisma, SQLite, JWT authentication
 
-There are several ways of editing your application.
+## Getting Started
 
-**Use Lovable**
+### Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9fa0adca-be8a-4d01-b990-f355c19354e1) and start prompting.
+- Node.js 18+
 
-hiiii im dheeraj
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+npm install
+npm run db:push
 ```
 
-**Edit a file directly in GitHub**
+### Development
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Run both frontend and backend:
 
-**Use GitHub Codespaces**
+```sh
+npm run dev:all
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Or separately:
 
-## What technologies are used for this project?
+```sh
+npm run dev:server   # API on http://localhost:3001
+npm run dev          # Frontend on http://localhost:8080
+```
 
-This project is built with .
+### Build
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+```sh
+npm run build
+```
 
-## How can I deploy this project?
+## Usage
 
-Simply open [Lovable](https://lovable.dev/projects/9fa0adca-be8a-4d01-b990-f355c19354e1) and click on Share -> Publish.
+1. **Register** as a farmer or consumer at `/account`
+2. **Farmers** can add products from their dashboard and manage incoming orders
+3. **Consumers** can browse products, add to cart, and place orders
+4. Farmers update order status (accepted → processing → shipped → delivered)
 
-## I want to use a custom domain - is that possible?
+## API
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+The backend runs at `http://localhost:3001/api` with endpoints for auth, products, farmers, orders, cart, reviews, and contact.
+
+## Deploy
+
+Frontend builds to `root/` for GitHub Pages. The backend requires a separate host with a database (replace SQLite with PostgreSQL for production).

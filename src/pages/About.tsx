@@ -1,13 +1,10 @@
 import React from 'react';
-import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { Leaf, Users, TrendingUp, ShieldCheck } from 'lucide-react';
 
 export default function About() {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-grow pt-24">
+    <>
         {/* Hero Section */}
         <section className="relative py-20 overflow-hidden">
           <div className="absolute inset-0 bg-nature-600/10 z-0"></div>
@@ -16,7 +13,7 @@ export default function About() {
               <div className="animate-fade-up">
                 <h1 className="text-4xl md:text-5xl font-bold mb-6">Our Mission to Revolutionize <span className="text-nature-600">Farm-to-Table</span></h1>
                 <p className="text-lg text-gray-600 mb-8">
-                  At Green Bridge, we're on a mission to eliminate middlemen and bring fresh produce directly to your doorstep, ensuring fair prices for farmers and fresh produce for consumers.
+                  At Green Bridge, we're on a mission to transform how people access fresh, locally-grown produce while creating sustainable livelihoods for farmers.
                 </p>
                 <Button className="bg-nature-600 hover:bg-nature-700 text-white">
                   Learn More About Our Journey
@@ -108,7 +105,7 @@ export default function About() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
                 {
-                  name: "Kiran Kumar",
+                  name: " Kiran Kumar",
                   title: "",
                   image: "/no-profile.svg"
                 },
@@ -162,6 +159,37 @@ export default function About() {
           </div>
         </section>
 
+        {/* Impact Stats */}
+        <section className="py-20 px-6 bg-nature-600 text-white">
+          <div className="container mx-auto">
+            <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-up">
+              <h2 className="text-3xl font-bold mb-4">Our Impact</h2>
+              <div className="w-20 h-1 bg-white mx-auto mb-6"></div>
+              <p className="text-white/80">
+                We're proud of the positive change we've created in the agricultural ecosystem.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div className="animate-fade-up" style={{ animationDelay: '0.1s' }}>
+                <div className="text-5xl font-bold mb-2">250+</div>
+                <p className="text-white/80">Partner Farmers</p>
+              </div>
+              <div className="animate-fade-up" style={{ animationDelay: '0.2s' }}>
+                <div className="text-5xl font-bold mb-2">50K+</div>
+                <p className="text-white/80">Happy Customers</p>
+              </div>
+              <div className="animate-fade-up" style={{ animationDelay: '0.3s' }}>
+                <div className="text-5xl font-bold mb-2">30%</div>
+                <p className="text-white/80">Higher Farmer Income</p>
+              </div>
+              <div className="animate-fade-up" style={{ animationDelay: '0.4s' }}>
+                <div className="text-5xl font-bold mb-2">75%</div>
+                <p className="text-white/80">Reduced Food Waste</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* CTA Section */}
         <section className="py-20 px-6">
@@ -182,7 +210,6 @@ export default function About() {
             </div>
           </div>
         </section>
-      </main>
-    </div>
+    </>
   );
 }

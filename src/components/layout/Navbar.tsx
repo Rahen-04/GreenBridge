@@ -89,9 +89,8 @@ export default function Navbar() {
           <span className="font-bold text-xl tracking-tight">Green Bridge</span>
         </Link>
 
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          <Link to="/GreenBridge/" className="nav-link font-medium">Home</Link>
+          <Link to="/" className="nav-link font-medium">Home</Link>
           <Link to="/products" className="nav-link font-medium">Products</Link>
           <Link to="/farmers" className="nav-link font-medium">Farmers</Link>
           <Link to="/about" className="nav-link font-medium">About Us</Link>
@@ -155,7 +154,7 @@ export default function Navbar() {
                 </DropdownMenuItem>
                 {userType === 'farmer' && (
                   <DropdownMenuItem asChild>
-                    <Link to="/dashboard" className="flex items-center">
+                    <Link to="/account" className="flex items-center">
                       <ShoppingCart className="mr-2 h-4 w-4" />
                       <span>Manage Products</span>
                     </Link>
