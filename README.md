@@ -263,4 +263,4 @@ To validate the product hypothesis, GreenBridge conducted a controlled usability
 
 ## 9. License & Author
 - **Author:** [Rahen-04](https://github.com/Rahen-04)
-- **License:** Distributed under the MIT License. See `LICENSE` for details.
+
