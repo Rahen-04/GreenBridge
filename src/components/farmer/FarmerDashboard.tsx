@@ -147,7 +147,11 @@ export default function FarmerDashboard() {
                   setShowAddProductForm(false);
                   setSelectedProduct(null);
                 }}
-                initialData={selectedProduct}
+                initialData={selectedProduct ? {
+                  ...selectedProduct,
+                  price: String(selectedProduct.price),
+                  stock: String(selectedProduct.stock),
+                } : undefined}
               />
             </CardContent>
           </Card>

@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: greenbridge-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: greenbridge
+      POSTGRES_PASSWORD: greenbridge_secure_pass
+      POSTGRES_DB: greenbridge_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenbridge -d greenbridge_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        DATABASE_PROVIDER: postgresql
+    container_name: greenbridge-app
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://greenbridge:greenbridge_secure_pass@db:5432/greenbridge_db?schema=public
+      JWT_SECRET: production_jwt_secret_greenbridge_secure_2026
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local

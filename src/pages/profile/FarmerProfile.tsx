@@ -1,10 +1,12 @@
 import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Star, Package, ShoppingBag, TrendingUp, LogOut } from 'lucide-react';
+import { Star, Package, ShoppingBag, TrendingUp, LogOut, BarChart3, Store } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import MyProducts from '@/components/farmer/MyProducts';
+import FarmerAnalytics from '@/components/farmer/FarmerAnalytics';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Clock, User, MapPin, DollarSign } from 'lucide-react';
@@ -151,91 +153,116 @@ export default function FarmerProfile({ onLogout }: FarmerProfileProps) {
         </Card>
       </div>
 
-      <Card className="mb-8">
-        <CardContent className="p-6">
-          <MyProducts />
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="analytics" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3 max-w-xl">
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            <span>Decision Support</span>
+          </TabsTrigger>
+          <TabsTrigger value="products" className="flex items-center gap-2">
+            <Store className="h-4 w-4" />
+            <span>My Products & AI</span>
+          </TabsTrigger>
+          <TabsTrigger value="orders" className="flex items-center gap-2">
+            <ShoppingBag className="h-4 w-4" />
+            <span>Orders ({newOrders.length})</span>
+          </TabsTrigger>
+        </TabsList>
 
-      <Card className="mb-8">
-        <CardHeader><CardTitle>New Orders</CardTitle></CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <p className="text-gray-500 text-center py-4">Loading orders...</p>
-          ) : newOrders.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No new orders</p>
-          ) : (
-            <div className="space-y-6">
-              {newOrders.map((order) => (
-                <div key={order.id} className="border rounded-lg p-6">
-                  <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold">Order #{order.id.slice(-8)}</h3>
-                        <Badge variant="secondary" className={getStatusColor(order.status)}>New</Badge>
+        <TabsContent value="analytics" className="space-y-6">
+          <FarmerAnalytics farmerId={userData.id} />
+        </TabsContent>
+
+        <TabsContent value="products">
+          <Card>
+            <CardContent className="p-6">
+              <MyProducts />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="orders" className="space-y-6">
+          <Card>
+            <CardHeader><CardTitle>New Orders</CardTitle></CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <p className="text-gray-500 text-center py-4">Loading orders...</p>
+              ) : newOrders.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No new orders</p>
+              ) : (
+                <div className="space-y-6">
+                  {newOrders.map((order) => (
+                    <div key={order.id} className="border rounded-lg p-6">
+                      <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">Order #{order.id.slice(-8)}</h3>
+                            <Badge variant="secondary" className={getStatusColor(order.status)}>New</Badge>
+                          </div>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex items-center gap-2"><User size={16} className="text-gray-500" /><span>{order.customerName}</span></div>
+                            <div className="flex items-center gap-2"><Clock size={16} className="text-gray-500" /><span>{order.orderDate}</span></div>
+                            <div className="flex items-center gap-2"><DollarSign size={16} className="text-gray-500" /><span>₹{order.amount.toFixed(2)}</span></div>
+                          </div>
+                        </div>
+                        <Button onClick={() => handleAcceptOrder(order.id)}>Accept Order</Button>
                       </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex items-center gap-2"><User size={16} className="text-gray-500" /><span>{order.customerName}</span></div>
-                        <div className="flex items-center gap-2"><Clock size={16} className="text-gray-500" /><span>{order.orderDate}</span></div>
-                        <div className="flex items-center gap-2"><DollarSign size={16} className="text-gray-500" /><span>₹{order.amount.toFixed(2)}</span></div>
+                      <div className="border-t pt-4 space-y-2">
+                        {order.items.map((item, i) => (
+                          <div key={i} className="flex justify-between text-sm">
+                            <span>{item.name} × {item.quantity}</span>
+                            <span>₹{(item.price * item.quantity).toFixed(2)}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <Button onClick={() => handleAcceptOrder(order.id)}>Accept Order</Button>
-                  </div>
-                  <div className="border-t pt-4 space-y-2">
-                    {order.items.map((item, i) => (
-                      <div key={i} className="flex justify-between text-sm">
-                        <span>{item.name} × {item.quantity}</span>
-                        <span>₹{(item.price * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
 
-      <Card>
-        <CardHeader><CardTitle>Ongoing Orders</CardTitle></CardHeader>
-        <CardContent>
-          {ongoingOrders.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No ongoing orders</p>
-          ) : (
-            <div className="space-y-6">
-              {ongoingOrders.map((order) => (
-                <div key={order.id} className="border rounded-lg p-6">
-                  <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-semibold">Order #{order.id.slice(-8)}</h3>
-                        <Badge variant="secondary" className={getStatusColor(order.status)}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </Badge>
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <div className="flex items-center gap-2"><User size={16} className="text-gray-500" /><span>{order.customerName}</span></div>
-                        <div className="flex items-center gap-2"><DollarSign size={16} className="text-gray-500" /><span>₹{order.amount.toFixed(2)}</span></div>
+          <Card>
+            <CardHeader><CardTitle>Ongoing Orders</CardTitle></CardHeader>
+            <CardContent>
+              {ongoingOrders.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">No ongoing orders</p>
+              ) : (
+                <div className="space-y-6">
+                  {ongoingOrders.map((order) => (
+                    <div key={order.id} className="border rounded-lg p-6">
+                      <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold">Order #{order.id.slice(-8)}</h3>
+                            <Badge variant="secondary" className={getStatusColor(order.status)}>
+                              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                            </Badge>
+                          </div>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex items-center gap-2"><User size={16} className="text-gray-500" /><span>{order.customerName}</span></div>
+                            <div className="flex items-center gap-2"><DollarSign size={16} className="text-gray-500" /><span>₹{order.amount.toFixed(2)}</span></div>
+                          </div>
+                        </div>
+                        <Select defaultValue={order.status} onValueChange={(v) => handleStatusUpdate(order.id, v)}>
+                          <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="processing">Processing</SelectItem>
+                            <SelectItem value="ready">Ready</SelectItem>
+                            <SelectItem value="shipped">Shipped</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                            <SelectItem value="cancelled">Cancel</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
-                    <Select defaultValue={order.status} onValueChange={(v) => handleStatusUpdate(order.id, v)}>
-                      <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="ready">Ready</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="cancelled">Cancel</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

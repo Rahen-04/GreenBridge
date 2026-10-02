@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -135,11 +135,39 @@ export const productsApi = {
   delete: (id: string) => api.delete(`/products/${id}`),
 };
 
+export interface FarmerAnalytics {
+  summary: {
+    totalRevenue: number;
+    totalOrders: number;
+    completedOrders: number;
+    avgOrderValue: number;
+    totalUnitsSold: number;
+    middlemanSavings: number;
+    activeListingCount: number;
+  };
+  salesTrend: Array<{
+    month: string;
+    revenue: number;
+    orders: number;
+  }>;
+  topProducts: Array<{
+    name: string;
+    revenue: number;
+    quantity: number;
+    category: string;
+  }>;
+  categoryBreakdown: Array<{
+    name: string;
+    value: number;
+  }>;
+}
+
 export const farmersApi = {
   list: () => api.get<Farmer[]>("/farmers"),
   get: (id: string) => api.get<Farmer>(`/farmers/${id}`),
   stats: (id: string) =>
     api.get<{ totalOrders: number; completedOrders: number; revenue: number }>(`/farmers/${id}/stats`),
+  analytics: (id: string) => api.get<FarmerAnalytics>(`/farmers/${id}/analytics`),
 };
 
 export const ordersApi = {
@@ -167,6 +195,22 @@ export const reviewsApi = {
 export const contactApi = {
   send: (data: { name: string; email: string; subject?: string; message: string }) =>
     api.post("/contact", data),
+};
+
+export interface PriceSuggestion {
+  suggestedPrice: number;
+  minRecommended: number;
+  maxRecommended: number;
+  mandiBenchmark: number;
+  platformAvg: number | null;
+  organicPremiumApplied: boolean;
+  confidence: "High" | "Moderate" | "Estimated";
+  reasoning: string;
+}
+
+export const pricingApi = {
+  suggest: (params: { name?: string; category?: string; isOrganic?: boolean }) =>
+    api.get<PriceSuggestion>("/pricing/suggest", { params }),
 };
 
 export default api;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Image, DollarSign, Box, Tag, Calendar, Upload } from "lucide-react";
+import { Image, DollarSign, Box, Tag, Calendar, Upload, Sparkles } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { pricingApi } from "@/lib/api";
 
 
 const productSchema = z.object({
@@ -63,6 +66,22 @@ export default function AddProductForm({ onSubmit, onCancel, initialData }: AddP
       category: "",
       image: "",
     },
+  });
+
+  const watchedName = form.watch("name");
+  const watchedCategory = form.watch("category");
+
+  const { data: priceSuggestion, isFetching: isPricingLoading } = useQuery({
+    queryKey: ["price-suggestion-dialog", watchedName, watchedCategory],
+    queryFn: async () => {
+      if (!watchedCategory) return null;
+      const { data } = await pricingApi.suggest({
+        name: watchedName,
+        category: watchedCategory,
+      });
+      return data;
+    },
+    enabled: !!watchedCategory,
   });
 
   useEffect(() => {
@@ -151,10 +170,77 @@ export default function AddProductForm({ onSubmit, onCancel, initialData }: AddP
 
           <FormField
             control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                      <SelectTrigger className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {priceSuggestion && (
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-3.5 text-xs text-muted-foreground space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-medium text-foreground">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <span>AI Price Recommendation</span>
+                <Badge variant="secondary" className="text-[10px] uppercase tracking-wider py-0 px-1.5">
+                  {priceSuggestion.confidence} confidence
+                </Badge>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs border-primary/40 text-primary hover:bg-primary hover:text-primary-foreground"
+                onClick={() => form.setValue("price", String(priceSuggestion.suggestedPrice), { shouldValidate: true })}
+              >
+                Apply ₹{priceSuggestion.suggestedPrice.toFixed(2)}
+              </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]">
+              <div>
+                Suggested: <span className="font-semibold text-foreground">₹{priceSuggestion.suggestedPrice.toFixed(2)}</span>
+              </div>
+              <div>
+                Fair Corridor: <span className="font-medium text-foreground">₹{priceSuggestion.minRecommended} - ₹{priceSuggestion.maxRecommended}</span>
+              </div>
+              <div>
+                Mandi Benchmark: <span className="font-medium text-foreground">₹{priceSuggestion.mandiBenchmark}/kg</span>
+              </div>
+            </div>
+            <p className="text-[11px] leading-tight text-muted-foreground/90">
+              {priceSuggestion.reasoning}
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Price</FormLabel>
+                <FormLabel>Price (₹)</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -165,9 +251,7 @@ export default function AddProductForm({ onSubmit, onCancel, initialData }: AddP
               </FormItem>
             )}
           />
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
             name="stock"
@@ -181,46 +265,18 @@ export default function AddProductForm({ onSubmit, onCancel, initialData }: AddP
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="date"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Estimated Date</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input type="date" className="pl-10" {...field} />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <FormField
           control={form.control}
-          name="category"
+          name="date"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Category</FormLabel>
+              <FormLabel>Estimated Harvest/Delivery Date</FormLabel>
               <FormControl>
                 <div className="relative">
-                  <Tag className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Select {...field}>
-                    <SelectTrigger className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Calendar className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input type="date" className="pl-10" {...field} />
                 </div>
               </FormControl>
               <FormMessage />

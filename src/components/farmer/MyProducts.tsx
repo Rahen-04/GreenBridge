@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Sparkles, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { productsApi } from '@/lib/api';
+import { productsApi, pricingApi } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
 const productSchema = z.object({
@@ -49,6 +49,24 @@ export default function MyProducts() {
       name: '', description: '', category: '', stock: 1, price: 0,
       harvestDate: '', estimatedDelivery: '', image: '', isOrganic: false, minQuantity: '',
     },
+  });
+
+  const watchedName = form.watch('name');
+  const watchedCategory = form.watch('category');
+  const watchedIsOrganic = form.watch('isOrganic');
+
+  const { data: priceSuggestion, isFetching: isPricingLoading } = useQuery({
+    queryKey: ['price-suggestion', watchedName, watchedCategory, watchedIsOrganic],
+    queryFn: async () => {
+      if (!watchedCategory) return null;
+      const { data } = await pricingApi.suggest({
+        name: watchedName,
+        category: watchedCategory,
+        isOrganic: watchedIsOrganic,
+      });
+      return data;
+    },
+    enabled: !!watchedCategory && isAddDialogOpen,
   });
 
   const onSubmit = async (data: ProductFormValues) => {
@@ -104,12 +122,56 @@ export default function MyProducts() {
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="stock" render={({ field }) => (
-                    <FormItem><FormLabel>Stock</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Stock (Quantity)</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="price" render={({ field }) => (
-                    <FormItem><FormLabel>Price (₹)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Price (₹ / unit)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
+
+                {watchedCategory && (
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-sm">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="h-4 w-4 text-emerald-600 animate-pulse" />
+                        <span className="font-semibold text-emerald-950">AI Market Price Intelligence</span>
+                        {priceSuggestion && (
+                          <span className="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded font-medium">
+                            {priceSuggestion.confidence} Confidence
+                          </span>
+                        )}
+                      </div>
+                      {priceSuggestion && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs border-emerald-500 text-emerald-800 hover:bg-emerald-100"
+                          onClick={() => form.setValue('price', priceSuggestion.suggestedPrice, { shouldValidate: true })}
+                        >
+                          Apply ₹{priceSuggestion.suggestedPrice}
+                        </Button>
+                      )}
+                    </div>
+                    {isPricingLoading ? (
+                      <p className="text-xs text-gray-500">Querying Mandi benchmark & platform clearing price...</p>
+                    ) : priceSuggestion ? (
+                      <div className="space-y-1">
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-base font-bold text-emerald-700">₹{priceSuggestion.suggestedPrice.toFixed(2)}</span>
+                          <span className="text-xs text-gray-600">
+                            Recommended Corridor: ₹{priceSuggestion.minRecommended.toFixed(2)} – ₹{priceSuggestion.maxRecommended.toFixed(2)}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-600 leading-relaxed">
+                          {priceSuggestion.reasoning}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">Select a category and enter name to see market guidance.</p>
+                    )}
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="harvestDate" render={({ field }) => (
                     <FormItem><FormLabel>Harvest Date</FormLabel><FormControl><Input type="date" {...field} /></FormControl></FormItem>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Star, Clock, Truck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,11 +19,26 @@ interface ProductOrderState {
 export default function ProductOrder() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { isLoggedIn } = useUser();
   const state = location.state as ProductOrderState | null;
   const [quantities, setQuantities] = useState<Record<string, string>>({});
 
-  const productId = state?.productId;
+  const productId = state?.productId || searchParams.get('productId') || '';
+
+  const { data: fetchedProduct } = useQuery({
+    queryKey: ['product-details', productId],
+    queryFn: async () => {
+      if (!productId) return null;
+      const { data } = await productsApi.get(productId);
+      return data;
+    },
+    enabled: !!productId && !state?.productName,
+  });
+
+  const productName = state?.productName || fetchedProduct?.name || 'Product';
+  const productImage = state?.productImage || fetchedProduct?.image || '/placeholder.svg';
+  const productDescription = state?.productDescription || fetchedProduct?.description || '';
 
   const { data: listings = [], isLoading } = useQuery({
     queryKey: ['listings', productId],
@@ -35,7 +50,7 @@ export default function ProductOrder() {
     enabled: !!productId,
   });
 
-  if (!state?.productId) {
+  if (!productId) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <p className="text-gray-500 mb-4">No product selected.</p>
@@ -51,17 +66,17 @@ export default function ProductOrder() {
     }
     const qty = quantities[farmerId] || '1';
     navigate(`/checkout/${listingProductId}`, {
-      state: { farmerId, quantity: Number(qty), productName: state.productName },
+      state: { farmerId, quantity: Number(qty), productName },
     });
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-6 mb-8">
-        <img src={state.productImage} alt={state.productName} className="w-24 h-24 object-cover rounded-lg" />
+        <img src={productImage} alt={productName} className="w-24 h-24 object-cover rounded-lg" />
         <div>
-          <h1 className="text-2xl font-bold mb-2">{state.productName}</h1>
-          <p className="text-gray-600">{state.productDescription}</p>
+          <h1 className="text-2xl font-bold mb-2">{productName}</h1>
+          <p className="text-gray-600">{productDescription}</p>
         </div>
       </div>
 

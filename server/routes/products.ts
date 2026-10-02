@@ -110,8 +110,9 @@ router.get("/farmer/mine", authMiddleware, async (req: AuthRequest, res) => {
 
 router.get("/:id/listings", async (req, res) => {
   try {
+    const id = req.params.id as string;
     const product = await prisma.product.findUnique({
-      where: { id: req.params.id },
+      where: { id },
       include: { farmer: { include: { farmerProfile: true } } },
     });
 
@@ -148,8 +149,9 @@ router.get("/:id/listings", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
+    const id = req.params.id as string;
     const product = await prisma.product.findUnique({
-      where: { id: req.params.id },
+      where: { id },
       include: { farmer: { include: { farmerProfile: true } } },
     });
 
@@ -212,13 +214,38 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
 
 router.put("/:id", authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const existing = await prisma.product.findUnique({ where: { id: req.params.id } });
+    const id = req.params.id as string;
+    const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: "Product not found" });
     if (existing.farmerId !== req.userId) return res.status(403).json({ error: "Forbidden" });
 
+    const {
+      name,
+      description,
+      category,
+      price,
+      stock,
+      image,
+      isOrganic,
+      minQuantity,
+      harvestDate,
+      estimatedDelivery,
+    } = req.body;
+
     const product = await prisma.product.update({
-      where: { id: req.params.id },
-      data: req.body,
+      where: { id },
+      data: {
+        ...(name !== undefined && { name: String(name) }),
+        ...(description !== undefined && { description: String(description) }),
+        ...(category !== undefined && { category: String(category) }),
+        ...(price !== undefined && { price: Number(price) }),
+        ...(stock !== undefined && { stock: Number(stock) }),
+        ...(image !== undefined && { image: image || null }),
+        ...(isOrganic !== undefined && { isOrganic: Boolean(isOrganic) }),
+        ...(minQuantity !== undefined && { minQuantity: minQuantity || null }),
+        ...(harvestDate !== undefined && { harvestDate: harvestDate || null }),
+        ...(estimatedDelivery !== undefined && { estimatedDelivery: estimatedDelivery || null }),
+      },
     });
 
     res.json(formatProduct(product));
@@ -230,11 +257,12 @@ router.put("/:id", authMiddleware, async (req: AuthRequest, res) => {
 
 router.delete("/:id", authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const existing = await prisma.product.findUnique({ where: { id: req.params.id } });
+    const id = req.params.id as string;
+    const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) return res.status(404).json({ error: "Product not found" });
     if (existing.farmerId !== req.userId) return res.status(403).json({ error: "Forbidden" });
 
-    await prisma.product.delete({ where: { id: req.params.id } });
+    await prisma.product.delete({ where: { id } });
     res.json({ success: true });
   } catch (error) {
     console.error(error);

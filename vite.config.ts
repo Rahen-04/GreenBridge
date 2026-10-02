@@ -6,7 +6,7 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   base: '/GreenBridge/',
   build: {
-    outDir: 'root',       
+    outDir: 'dist',       
   },
   server: {
     host: "::",

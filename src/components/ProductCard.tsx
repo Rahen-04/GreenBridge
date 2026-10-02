@@ -22,7 +22,7 @@ export default function ProductCard({ id, name, description, image, category, mi
   const { isLoggedIn, userType, updateCartCount } = useUser();
 
   const handleOrderClick = () => {
-    navigate('/product-order', {
+    navigate(`/product-order?productId=${encodeURIComponent(id)}`, {
       state: { productId: id, productName: name, productImage: image, productDescription: description },
     });
   };

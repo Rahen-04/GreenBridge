@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Hero() {
-  const [isOpen, setIsOpen] = useState(false);
-  
   return (
     <section className="relative overflow-hidden pt-24 pb-16 md:pt-28 md:pb-20 lg:pt-32 lg:pb-24">
       {/* Background gradient */}
@@ -30,19 +28,19 @@ export default function Hero() {
               GreenBridge helps farmers secure buyers in advance of harvest time, reduce post-harvest losses, and promote fair pricing by eliminating middlemen.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <a 
-                href="#featured-products" 
+              <Link 
+                to="/products" 
                 className="inline-flex items-center justify-center bg-nature-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-nature-700 transition-colors"
               >
-                <Link to="/products" className="font-medium text-lg" onClick={() => setIsOpen(false)}>Shop now</Link>
+                Shop now
                 <ArrowRight size={18} className="ml-2" />
-              </a>
-              <a 
-                href="#about" 
+              </Link>
+              <Link 
+                to="/about" 
                 className="inline-flex items-center justify-center bg-white border border-gray-200 text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors"
               >
                 Learn More
-              </a>
+              </Link>
             </div>
           </div>
           

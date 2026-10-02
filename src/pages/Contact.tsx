@@ -201,7 +201,7 @@ export default function Contact() {
               {[
                 {
                   question: "What areas do you deliver to?",
-                  answer: "We currently deliver to most areas within a 50-mile radius of Sunnyvale, CA. This includes San Francisco, San Jose, Palo Alto, Mountain View, and surrounding areas. Enter your zip code at checkout to confirm delivery availability."
+                  answer: "We deliver across our participating regional hubs and partner farmer locations. Enter your delivery address at checkout to confirm delivery availability."
                 },
                 {
                   question: "How fresh are your products?",
@@ -209,7 +209,7 @@ export default function Contact() {
                 },
                 {
                   question: "How do I become a partner farmer?",
-                  answer: "To become a partner farmer, please fill out the application form on our 'Farmers' page or contact us directly at partners@agrocraft.com. Our team will review your application and get in touch within 3-5 business days."
+                  answer: "To become a partner farmer, please sign up for a farmer account on our platform or contact us directly at partners@greenbridge.com. Our team will review your application and get in touch within 3-5 business days."
                 },
                 {
                   question: "What if I'm not satisfied with my order?",

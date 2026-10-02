@@ -122,8 +122,8 @@ export default function Footer() {
                 </li>
                 <li className="flex items-center">
                   <Mail className="h-5 w-5 text-nature-600 mr-3" />
-                  <a href="mailto:info@Green Bridge.com" className="text-gray-600 hover:text-nature-600 transition-colors">
-                    info@Green Bridge.com
+                  <a href="mailto:info@greenbridge.com" className="text-gray-600 hover:text-nature-600 transition-colors">
+                    info@greenbridge.com
                   </a>
                 </li>
               </ul>

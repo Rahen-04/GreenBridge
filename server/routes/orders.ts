@@ -33,6 +33,8 @@ function formatOrder(order: {
   };
 }
 
+type OrderPayload = Parameters<typeof formatOrder>[0];
+
 router.post("/", authMiddleware, async (req: AuthRequest, res) => {
   try {
     if (req.userRole !== "consumer") {
@@ -45,19 +47,20 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const product = await prisma.product.findUnique({ where: { id: productId } });
-    if (!product || product.farmerId !== farmerId) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-
-    if (product.stock < quantity) {
-      return res.status(400).json({ error: "Insufficient stock" });
-    }
-
+    const orderQty = Math.max(1, parseInt(quantity, 10) || 1);
     const consumer = await prisma.user.findUnique({ where: { id: req.userId } });
-    const total = product.price * quantity;
 
     const order = await prisma.$transaction(async (tx) => {
+      const currentProduct = await tx.product.findUnique({ where: { id: productId } });
+      if (!currentProduct || currentProduct.farmerId !== farmerId) {
+        throw new Error("PRODUCT_NOT_FOUND");
+      }
+      if (currentProduct.stock < orderQty) {
+        throw new Error("INSUFFICIENT_STOCK");
+      }
+
+      const total = currentProduct.price * orderQty;
+
       const created = await tx.order.create({
         data: {
           consumerId: req.userId!,
@@ -68,8 +71,8 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
           items: {
             create: {
               productId,
-              quantity: Number(quantity),
-              price: product.price,
+              quantity: orderQty,
+              price: currentProduct.price,
             },
           },
         },
@@ -82,14 +85,21 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
 
       await tx.product.update({
         where: { id: productId },
-        data: { stock: product.stock - Number(quantity) },
+        data: { stock: { decrement: orderQty } },
       });
 
       return created;
     });
 
     res.status(201).json(formatOrder(order));
-  } catch (error) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "";
+    if (message === "INSUFFICIENT_STOCK") {
+      return res.status(400).json({ error: "Insufficient stock" });
+    }
+    if (message === "PRODUCT_NOT_FOUND") {
+      return res.status(404).json({ error: "Product not found" });
+    }
     console.error(error);
     res.status(500).json({ error: "Failed to create order" });
   }
@@ -115,7 +125,21 @@ router.post("/checkout", authMiddleware, async (req: AuthRequest, res) => {
     const discount = couponCode?.toLowerCase() === "fresh10" ? subtotal * 0.1 : 0;
     const total = subtotal - discount;
 
+    const consumer = await prisma.user.findUnique({ where: { id: req.userId } });
+    const deliveryAddress = address || consumer?.address || null;
+
     const orders = await prisma.$transaction(async (tx) => {
+      // Validate stock for all items atomically
+      for (const item of cartItems) {
+        const prod = await tx.product.findUnique({ where: { id: item.productId } });
+        if (!prod) {
+          throw new Error(`PRODUCT_NOT_FOUND:${item.product.name}`);
+        }
+        if (prod.stock < item.quantity) {
+          throw new Error(`INSUFFICIENT_STOCK:${item.product.name}`);
+        }
+      }
+
       const byFarmer = new Map<string, typeof cartItems>();
       for (const item of cartItems) {
         const farmerId = item.product.farmerId;
@@ -131,7 +155,7 @@ router.post("/checkout", authMiddleware, async (req: AuthRequest, res) => {
             consumerId: req.userId!,
             farmerId,
             total: farmerTotal,
-            address: address || null,
+            address: deliveryAddress,
             status: "pending",
             items: {
               create: items.map((item) => ({
@@ -167,7 +191,16 @@ router.post("/checkout", authMiddleware, async (req: AuthRequest, res) => {
       total,
       discount,
     });
-  } catch (error) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.startsWith("INSUFFICIENT_STOCK:")) {
+      const name = message.replace("INSUFFICIENT_STOCK:", "");
+      return res.status(400).json({ error: `Insufficient stock for ${name}` });
+    }
+    if (message.startsWith("PRODUCT_NOT_FOUND:")) {
+      const name = message.replace("PRODUCT_NOT_FOUND:", "");
+      return res.status(404).json({ error: `Product not found: ${name}` });
+    }
     console.error(error);
     res.status(500).json({ error: "Checkout failed" });
   }
@@ -218,7 +251,8 @@ router.get("/farmer", authMiddleware, async (req: AuthRequest, res) => {
 router.patch("/:id/status", authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { status } = req.body;
-    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    const id = req.params.id as string;
+    const order = await prisma.order.findUnique({ where: { id } });
 
     if (!order) return res.status(404).json({ error: "Order not found" });
     if (order.farmerId !== req.userId) return res.status(403).json({ error: "Forbidden" });
@@ -229,7 +263,7 @@ router.patch("/:id/status", authMiddleware, async (req: AuthRequest, res) => {
     }
 
     const updated = await prisma.order.update({
-      where: { id: req.params.id },
+      where: { id },
       data: { status },
       include: {
         consumer: true,
@@ -238,7 +272,7 @@ router.patch("/:id/status", authMiddleware, async (req: AuthRequest, res) => {
       },
     });
 
-    res.json(formatOrder(updated));
+    res.json(formatOrder(updated as unknown as OrderPayload));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to update order" });

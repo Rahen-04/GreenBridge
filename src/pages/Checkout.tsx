@@ -32,6 +32,16 @@ export default function Checkout() {
     enabled: !!productId,
   });
 
+  const farmerId = state?.farmerId || product?.farmerId;
+  const quantity = state?.quantity || 1;
+  const total = product ? product.price * quantity : 0;
+
+  React.useEffect(() => {
+    if (userData?.address && !address) {
+      setAddress(userData.address);
+    }
+  }, [userData?.address, address]);
+
   if (!isLoggedIn) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
@@ -41,7 +51,7 @@ export default function Checkout() {
     );
   }
 
-  if (!state?.farmerId || !productId) {
+  if (!productId) {
     return (
       <div className="container mx-auto px-4 py-8 text-center">
         <p className="text-gray-500 mb-4">Invalid checkout session.</p>
@@ -50,17 +60,22 @@ export default function Checkout() {
     );
   }
 
-  const quantity = state.quantity || 1;
-  const total = product ? product.price * quantity : 0;
-
   const handlePlaceOrder = async () => {
+    if (!farmerId) {
+      toast({ title: 'Error', description: 'Unable to identify farmer for this order.', variant: 'destructive' });
+      return;
+    }
+    if (!address.trim()) {
+      toast({ title: 'Address required', description: 'Please enter your delivery address.', variant: 'destructive' });
+      return;
+    }
     setIsSubmitting(true);
     try {
       await ordersApi.create({
         productId: productId!,
-        farmerId: state.farmerId,
+        farmerId,
         quantity,
-        address,
+        address: address.trim(),
       });
       toast({ title: 'Order placed', description: 'Your order has been submitted to the farmer.' });
       navigate('/account');

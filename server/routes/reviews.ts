@@ -8,8 +8,29 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { farmerId, rating, comment } = req.body;
 
-    if (!farmerId || !rating || !comment) {
+    if (!farmerId || rating == null || !comment) {
       return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (farmerId === req.userId) {
+      return res.status(400).json({ error: "You cannot review yourself" });
+    }
+
+    const numRating = Math.round(Number(rating));
+    if (isNaN(numRating) || numRating < 1 || numRating > 5) {
+      return res.status(400).json({ error: "Rating must be an integer between 1 and 5" });
+    }
+
+    const trimmedComment = String(comment).trim();
+    if (!trimmedComment) {
+      return res.status(400).json({ error: "Comment cannot be empty" });
+    }
+
+    const farmer = await prisma.user.findFirst({
+      where: { id: farmerId, role: "farmer" },
+    });
+    if (!farmer) {
+      return res.status(404).json({ error: "Farmer not found" });
     }
 
     const user = await prisma.user.findUnique({ where: { id: req.userId } });
@@ -19,8 +40,8 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
       data: {
         farmerId,
         userId: req.userId!,
-        rating: Number(rating),
-        comment,
+        rating: numRating,
+        comment: trimmedComment,
         userName: user.name,
       },
     });
@@ -30,7 +51,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res) => {
 
     await prisma.farmerProfile.updateMany({
       where: { userId: farmerId },
-      data: { rating: avgRating },
+      data: { rating: Math.round(avgRating * 10) / 10 },
     });
 
     res.status(201).json({

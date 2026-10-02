@@ -8,12 +8,19 @@ import { cartApi, ordersApi } from '@/lib/api';
 import { useUser, syncCartCount } from '@/contexts/UserContext';
 
 export default function Cart() {
-  const { isLoggedIn, updateCartCount } = useUser();
+  const { isLoggedIn, userData, updateCartCount } = useUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
+  const [address, setAddress] = useState(userData?.address || '');
   const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  React.useEffect(() => {
+    if (userData?.address && !address) {
+      setAddress(userData.address);
+    }
+  }, [userData?.address, address]);
 
   const { data: cartItems = [], isLoading } = useQuery({
     queryKey: ['cart'],
@@ -60,9 +67,20 @@ export default function Cart() {
   const total = subtotal - discount + shipping;
 
   const proceedToCheckout = async () => {
+    if (!address.trim()) {
+      toast({
+        title: 'Address required',
+        description: 'Please enter a delivery address to complete your order.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setIsCheckingOut(true);
     try {
-      await ordersApi.checkout({ couponCode: couponApplied ? 'fresh10' : undefined });
+      await ordersApi.checkout({
+        address: address.trim(),
+        couponCode: couponApplied ? 'fresh10' : undefined,
+      });
       queryClient.invalidateQueries({ queryKey: ['cart'] });
       await syncCartCount(updateCartCount);
       toast({ title: 'Order placed', description: 'Your order has been placed successfully!' });
@@ -172,6 +190,22 @@ export default function Cart() {
                     <span>Total</span><span className="text-xl">₹{total.toFixed(2)}</span>
                   </div>
                 </div>
+              </div>
+              <div className="mb-4">
+                <label className="text-sm font-medium text-gray-700 block mb-1">
+                  Delivery Address
+                </label>
+                <input
+                  type="text"
+                  placeholder="Enter your delivery address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-nature-500"
+                  required
+                />
+                {!address.trim() && (
+                  <p className="text-xs text-amber-600 mt-1">Please enter a delivery address to checkout</p>
+                )}
               </div>
               <Button className="w-full bg-nature-600 hover:bg-nature-700 mb-4" onClick={proceedToCheckout} disabled={isCheckingOut}>
                 {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}

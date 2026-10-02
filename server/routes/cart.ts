@@ -41,6 +41,8 @@ router.post("/items", authMiddleware, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
+    const qty = Math.max(1, parseInt(quantity, 10) || 1);
+
     const existing = await prisma.cartItem.findUnique({
       where: { userId_productId: { userId: req.userId!, productId } },
     });
@@ -48,14 +50,14 @@ router.post("/items", authMiddleware, async (req: AuthRequest, res) => {
     if (existing) {
       await prisma.cartItem.update({
         where: { id: existing.id },
-        data: { quantity: existing.quantity + Number(quantity) },
+        data: { quantity: existing.quantity + qty },
       });
     } else {
       await prisma.cartItem.create({
         data: {
           userId: req.userId!,
           productId,
-          quantity: Number(quantity),
+          quantity: qty,
         },
       });
     }
@@ -85,18 +87,20 @@ router.post("/items", authMiddleware, async (req: AuthRequest, res) => {
 router.patch("/items/:id", authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { quantity } = req.body;
-    const item = await prisma.cartItem.findUnique({ where: { id: req.params.id } });
+    const id = req.params.id as string;
+    const item = await prisma.cartItem.findUnique({ where: { id } });
 
     if (!item || item.userId !== req.userId) {
       return res.status(404).json({ error: "Item not found" });
     }
 
-    if (quantity < 1) {
+    const parsedQty = parseInt(quantity, 10);
+    if (isNaN(parsedQty) || parsedQty < 1) {
       await prisma.cartItem.delete({ where: { id: item.id } });
     } else {
       await prisma.cartItem.update({
         where: { id: item.id },
-        data: { quantity: Number(quantity) },
+        data: { quantity: parsedQty },
       });
     }
 
@@ -124,7 +128,8 @@ router.patch("/items/:id", authMiddleware, async (req: AuthRequest, res) => {
 
 router.delete("/items/:id", authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const item = await prisma.cartItem.findUnique({ where: { id: req.params.id } });
+    const id = req.params.id as string;
+    const item = await prisma.cartItem.findUnique({ where: { id } });
     if (!item || item.userId !== req.userId) {
       return res.status(404).json({ error: "Item not found" });
     }

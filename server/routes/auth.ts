@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, AuthRequest } from "../middleware/auth.js";
+import { parseSpecialties } from "../lib/utils.js";
 
 const router = Router();
 
@@ -23,9 +24,7 @@ function formatUser(user: {
     rating: number;
   } | null;
 }, cartCount = 0) {
-  const specialties = user.farmerProfile?.specialties
-    ? JSON.parse(user.farmerProfile.specialties)
-    : [];
+  const specialties = parseSpecialties(user.farmerProfile?.specialties);
 
   return {
     id: user.id,
@@ -178,7 +177,9 @@ router.patch("/profile", authMiddleware, async (req: AuthRequest, res) => {
           ...(location !== undefined && { location }),
           ...(description !== undefined && { description }),
           ...(phone !== undefined && { phone }),
-          ...(specialties !== undefined && { specialties: JSON.stringify(specialties) }),
+          ...(specialties !== undefined && {
+            specialties: Array.isArray(specialties) ? JSON.stringify(specialties) : "[]",
+          }),
         },
       });
     }

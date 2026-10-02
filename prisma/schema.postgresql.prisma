@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String
+  avatar       String?
+  address      String?
+  createdAt    DateTime @default(now())
+
+  farmerProfile FarmerProfile?
+  products      Product[]
+  reviews       Review[]
+  orders        Order[]        @relation("ConsumerOrders")
+  farmerOrders  Order[]        @relation("FarmerOrders")
+  cartItems     CartItem[]
+}
+
+model FarmerProfile {
+  id            String  @id @default(cuid())
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location      String?
+  description   String?
+  specialties   String  @default("[]")
+  phone         String?
+  isVerified    Boolean @default(false)
+  aadhaarNumber String?
+  rating        Float   @default(0)
+}
+
+model Product {
+  id                String      @id @default(cuid())
+  farmerId          String
+  farmer            User        @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  name              String
+  description       String
+  category          String
+  price             Float
+  stock             Int
+  image             String?
+  isOrganic         Boolean     @default(false)
+  minQuantity       String?
+  harvestDate       String?
+  estimatedDelivery String?
+  createdAt         DateTime    @default(now())
+  orderItems        OrderItem[]
+  cartItems         CartItem[]
+}
+
+model Order {
+  id         String      @id @default(cuid())
+  consumerId String
+  farmerId   String
+  consumer   User        @relation("ConsumerOrders", fields: [consumerId], references: [id])
+  farmer     User        @relation("FarmerOrders", fields: [farmerId], references: [id])
+  status     String      @default("pending")
+  total      Float
+  address    String?
+  createdAt  DateTime    @default(now())
+  items      OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  farmerId  String
+  userId    String
+  farmer    User     @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String
+  userName  String
+  createdAt DateTime @default(now())
+}
+
+model CartItem {
+  id        String  @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  createdAt DateTime @default(now())
+}

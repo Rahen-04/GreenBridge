@@ -12,10 +12,13 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
+    "start": "cross-env NODE_ENV=production tsx server/index.ts",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
+    "db:generate:postgres": "prisma generate --schema=prisma/schema.postgresql.prisma",
+    "db:push:postgres": "prisma db push --schema=prisma/schema.postgresql.prisma",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
