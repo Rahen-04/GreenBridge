@@ -35,10 +35,10 @@ Key outcomes:
 ======================================================================
 Metric                    | Baseline (Linear Reg) | Random Forest (Proposed)
 ======================================================================
-Mean Absolute Error (MAE) | ₹3.82 / kg            | ₹1.46 / kg
-Root Mean Squared (RMSE)  | ₹5.14 / kg            | ₹2.28 / kg
-Mean Abs. Pct Error (MAPE)| 11.20%                | 4.65%
-R² Score (Goodness of Fit)| 0.8841                | 0.9782
+Mean Absolute Error (MAE) | ₹3.27 / kg            | ₹3.19 / kg
+Root Mean Squared (RMSE)  | ₹4.78 / kg            | ₹4.66 / kg
+Mean Abs. Pct Error (MAPE)| 10.23%                | 10.25%
+R² Score (Goodness of Fit)| 0.9069                | 0.9117
 ======================================================================
 ```
 

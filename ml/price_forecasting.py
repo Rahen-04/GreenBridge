@@ -128,10 +128,11 @@ def train_and_evaluate(df: pd.DataFrame):
         print("    Please run: pip install -r ml/requirements.txt")
         return None
 
-    # Chronological Split (80% Train, 20% Test) — Strictly prevents future data leakage
-    split_index = int(len(df) * 0.8)
-    train_df = df.iloc[:split_index]
-    test_df = df.iloc[split_index:]
+    # Chronological Split (First 80% Dates Train, Last 20% Dates Test) — Strictly prevents future data leakage
+    unique_dates = sorted(df["date"].unique())
+    cutoff_date = unique_dates[int(len(unique_dates) * 0.8)]
+    train_df = df[df["date"] < cutoff_date].copy()
+    test_df = df[df["date"] >= cutoff_date].copy()
 
     feature_cols = [c for c in df.columns if c not in ["date", "mandi_modal_price"]]
     target_col = "mandi_modal_price"
@@ -172,17 +173,17 @@ def train_and_evaluate(df: pd.DataFrame):
     print("-" * 70)
     print(f"{'Metric':<25} | {'Baseline (Linear Reg)':<20} | {'Random Forest (Proposed)':<20}")
     print("-" * 70)
-    print(f"{'Mean Absolute Error (MAE)':<25} | ₹{lr_mae:<19.2f} | ₹{rf_mae:<19.2f}")
-    print(f"{'Root Mean Squared Error (RMSE)':<25} | ₹{lr_rmse:<19.2f} | ₹{rf_rmse:<19.2f}")
+    print(f"{'Mean Absolute Error (MAE)':<25} | Rs. {lr_mae:<15.2f} | Rs. {rf_mae:<15.2f}")
+    print(f"{'Root Mean Squared Error (RMSE)':<25} | Rs. {lr_rmse:<15.2f} | Rs. {rf_rmse:<15.2f}")
     print(f"{'Mean Abs. Percentage Error (MAPE)':<25} | {lr_mape:<18.2f}% | {rf_mape:<18.2f}%")
-    print(f"{'R² Score (Goodness of Fit)':<25} | {lr_r2:<19.4f} | {rf_r2:<19.4f}")
+    print(f"{'R2 Score (Goodness of Fit)':<25} | {lr_r2:<19.4f} | {rf_r2:<19.4f}")
     print("=" * 70)
 
     # Feature Importance (Top 5)
     importances = pd.Series(rf.feature_importances_, index=feature_cols).sort_values(ascending=False)
     print(" TOP 5 FEATURE IMPORTANCES (Random Forest):")
     for feat, imp in importances.head(5).items():
-        print(f"  • {feat:<20}: {imp * 100:.2f}%")
+        print(f"  * {feat:<20}: {imp * 100:.2f}%")
     print("=" * 70)
 
     # Export model artifact
@@ -190,7 +191,7 @@ def train_and_evaluate(df: pd.DataFrame):
     os.makedirs(models_dir, exist_ok=True)
     model_path = os.path.join(models_dir, "random_forest_price_model.joblib")
     joblib.dump({"model": rf, "feature_columns": feature_cols}, model_path)
-    print(f"[✓] Serialized trained model to: {model_path}")
+    print(f"[OK] Serialized trained model to: {model_path}")
 
     return rf, feature_cols
 
@@ -281,8 +282,8 @@ if __name__ == "__main__":
         recent_prices=sample_tomatoes,
         is_organic=True
     )
-    print(f"  • Crop:               {result['crop']} (Organic: {result['is_organic']})")
-    print(f"  • Forecasted Price:   ₹{result['forecasted_price_per_kg']}/kg")
-    print(f"  • Fair Corridor:      ₹{result['fair_corridor']['min']} – ₹{result['fair_corridor']['max']}/kg")
-    print(f"  • Confidence:         {result['confidence']}")
+    print(f"  * Crop:               {result['crop']} (Organic: {result['is_organic']})")
+    print(f"  * Forecasted Price:   Rs. {result['forecasted_price_per_kg']}/kg")
+    print(f"  * Fair Corridor:      Rs. {result['fair_corridor']['min']} to Rs. {result['fair_corridor']['max']}/kg")
+    print(f"  * Confidence:         {result['confidence']}")
     print("=" * 70)
