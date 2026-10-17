@@ -44,7 +44,7 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-app.get("/api/health", (_req, res) => {
+app.get(["/api/health", "/healthz"], (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
