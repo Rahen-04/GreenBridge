@@ -31,3 +31,4 @@ prisma/dev.db-journal
 __pycache__/
 *.py[cod]
 *$py.class
+.neon
