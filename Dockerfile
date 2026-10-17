@@ -33,8 +33,11 @@ ENV PORT=3001
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies and tsx / prisma for runtime execution
-RUN npm ci --omit=dev && npm install -g tsx prisma
+# Install production dependencies without running postinstall (prevents default SQLite overwrite),
+# then explicitly generate Prisma client for PostgreSQL:
+RUN npm ci --omit=dev --ignore-scripts && \
+    npx prisma generate --schema=prisma/schema.postgresql.prisma && \
+    npm install -g tsx prisma
 
 # Copy built frontend assets
 COPY --from=builder /app/dist ./dist

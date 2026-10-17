@@ -14,20 +14,41 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+if (!process.env.JWT_SECRET) {
+  console.warn("[WARN] JWT_SECRET is not set. Using local development fallback.");
+  process.env.JWT_SECRET = "greenbridge_default_jwt_secret_key_2026";
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || true,
+  credentials: true,
+}));
 app.use(express.json({ limit: "10mb" }));
+
+// Rate limit authentication attempts to prevent brute-force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 50,
+  message: { error: "Too many authentication requests, please try again after 15 minutes." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/farmers", farmerRoutes);
 app.use("/api/orders", orderRoutes);

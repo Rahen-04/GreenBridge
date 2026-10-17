@@ -25,7 +25,7 @@ const App = () => (
       <UserProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter basename="/GreenBridge">
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <div className="min-h-screen flex flex-col">
             <Navbar />
             <main className="flex-grow pt-16">
